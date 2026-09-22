@@ -150,3 +150,29 @@ const reveal = new IntersectionObserver(
   { threshold: 0.15 },
 )
 sections.forEach(section => reveal.observe(section))
+
+// ============ 夜间/白天模式切换 ============
+// 效果位置：顶部右侧的圆形按钮。JS 只负责切换 body 的 dark 类，
+// 长什么样全部由 CSS 的 body.dark 规则决定（和导航高亮同一个思路）。
+// 选择存进 localStorage，下次打开还记得；第一次访问跟随系统偏好。
+const themeToggle = document.querySelector('#theme-toggle')
+const THEME_KEY = 'preferred-theme'
+
+function applyTheme(theme) {
+  const dark = theme === 'dark'
+  document.body.classList.toggle('dark', dark)
+  // 按钮图标跟着换：夜间显示太阳（点它回白天），白天显示月亮。
+  themeToggle.textContent = dark ? '☀️' : '🌙'
+  themeToggle.setAttribute('aria-label', dark ? '切换到白天模式' : '切换到夜间模式')
+}
+
+// localStorage 里存过就用存的；没存过看系统设置（很多系统夜间会自动变）。
+const savedTheme = localStorage.getItem(THEME_KEY)
+const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+applyTheme(savedTheme || (systemDark ? 'dark' : 'light'))
+
+themeToggle.addEventListener('click', () => {
+  const next = document.body.classList.contains('dark') ? 'light' : 'dark'
+  localStorage.setItem(THEME_KEY, next)
+  applyTheme(next)
+})
